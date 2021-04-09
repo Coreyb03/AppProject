@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.io.*;
+import java.util.Scanner;
 
 public class Tracker extends JFrame implements ActionListener
 {
@@ -13,24 +15,31 @@ public class Tracker extends JFrame implements ActionListener
     TimeZone timezone = TimeZone.getDefault();
     Calendar cal = Calendar.getInstance();
 
-    public static void main(String[] args) throws Exception {
-
-    
+    public static void main(String[] args) throws FileNotFoundException {
         
-       
-
         EventQueue.invokeLater(() -> {
-            Tracker tracker = new Tracker();
-            tracker.setVisible(true);  
+            Tracker tracker;
+            try {
+                tracker = new Tracker();
+                tracker.setVisible(true);
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+            
+             
             
         });
-
+        
     }
-
-    public Tracker(){
+    
+    public Tracker()throws FileNotFoundException{
         initUI();
     }
 
+    
+    
     private void createLayout(JComponent... args){
         var pane = getContentPane();
         var gl = new GroupLayout(pane);
@@ -42,15 +51,24 @@ public class Tracker extends JFrame implements ActionListener
         gl.setVerticalGroup(gl.createSequentialGroup().addComponent(args[0]).addComponent(args[1]).addComponent(args[2]).addGroup(gl.createParallelGroup().addComponent(args[3])).addComponent(args[5]).addComponent(args[4]));
     }
 
-    public void initUI() {
+    public void initUI() throws FileNotFoundException {
+        File file = new File("data.csv");
+        
+        
+        
+        Scanner scan = new Scanner(file);
+        String[] parameters = new String[2];
+        
+        while( scan.hasNextLine()) {
+            parameters = scan.nextLine().split(",");
+            
+        }
+        scan.close();
         
         
 
-        ArrayList<String> comboList = new ArrayList<String>();
-        comboList.add("HII");
-
         
-        JLabel startDate = new JLabel("Current Date", SwingConstants.LEFT);
+        JLabel startDate = new JLabel(parameters[1], SwingConstants.LEFT);
         JTextField startTextBox = new JTextField();
         
         startTextBox.setEditable(false);
@@ -77,16 +95,19 @@ public class Tracker extends JFrame implements ActionListener
         intervalField.setBackground(Color.blue);
 
         Event trackedEvent = new Event();
-        
+        trackedEvent.setInterval(Integer.parseInt(parameters[0]));
         eventButton.addActionListener((event) -> intervalField.setEditable(!intervalField.isEditable()));
         
-        
+    
         progressBar.setMinimum(0);
+        progressBar.setValue(Integer.parseInt(parameters[1]));
         progressBar.setMaximum(trackedEvent.getInterval() * 2); //timer seems 2 times as fast
 
         JLabel progressBarTitle = new JLabel("Counting down to " + trackedEvent.getInterval(),SwingConstants.CENTER);
         progressBarTitle.setFont(new Font("Serif", Font.BOLD, 12));
 
+        PrintWriter output = new PrintWriter(file);
+       
 
         Timer timer = new Timer(ONE_SECOND, new ActionListener(){
             
@@ -103,6 +124,11 @@ public class Tracker extends JFrame implements ActionListener
                         progressBar.setValue(progressBar.getValue() + 1);
 
                         progressBarTitle.setText("Counting down to - " + trackedEvent.getInterval());
+
+
+                        output.println(trackedEvent.getInterval() + "," + progressBar.getValue());
+                        output.flush();
+
                         startTextBox.revalidate();
                         startTextBox.repaint();
                     }
@@ -120,7 +146,9 @@ public class Tracker extends JFrame implements ActionListener
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-
+       
+        output.close();
+        
         
         createLayout(startDate,startTextBox,eventButton,intervalField,progressBar,progressBarTitle
         );
@@ -141,7 +169,7 @@ public class Tracker extends JFrame implements ActionListener
         } else {
             // field.setText("What is the Interval? (In Days)");
             // button.setText(Integer.toString(trackedEvent.getInterval()));
-            button.addActionListener((event) -> trackedEvent.setInterval(Integer.parseInt(field.getText())));            
+            button.addActionListener((event) -> trackedEvent.setInterval(Integer.parseInt(field.getText( ))));            
             field.setBackground(Color.cyan);
 
         }
