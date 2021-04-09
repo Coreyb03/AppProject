@@ -2,12 +2,15 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import javax.swing.*;
+
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.EventQueue;
-import java.util.ArrayList;
+
 import java.io.*;
 import java.util.Scanner;
+import java.util.Random;
 
 public class Tracker extends JFrame implements ActionListener
 {
@@ -54,7 +57,7 @@ public class Tracker extends JFrame implements ActionListener
     public void initUI() throws FileNotFoundException {
         File file = new File("data.csv");
         
-        
+        Random random = new Random();
         
         Scanner scan = new Scanner(file);
         String[] parameters = new String[2];
@@ -65,11 +68,11 @@ public class Tracker extends JFrame implements ActionListener
         }
         scan.close();
         
-        // if erroring check data file!!!
+        // if erroring check data file!!! it should look like ----- 12,12
         
-
+        PrintWriter output = new PrintWriter(file);
         
-        JLabel startDate = new JLabel(parameters[1], SwingConstants.LEFT);
+        JLabel startDate = new JLabel("Current time", SwingConstants.LEFT);
         JTextField startTextBox = new JTextField();
         
         startTextBox.setEditable(false);
@@ -104,21 +107,25 @@ public class Tracker extends JFrame implements ActionListener
         progressBar.setValue(Integer.parseInt(parameters[1]));
         progressBar.setMaximum(trackedEvent.getInterval() * 2); //timer seems 2 times as fast
 
-        JLabel progressBarTitle = new JLabel("Counting down to " + trackedEvent.getInterval(),SwingConstants.CENTER);
+        JLabel progressBarTitle = new JLabel("Counting down to - " + trackedEvent.getInterval(),SwingConstants.CENTER);
         progressBarTitle.setFont(new Font("Serif", Font.BOLD, 12));
 
-        PrintWriter output = new PrintWriter(file);
+        // PrintWriter output = new PrintWriter(file);
        
 
-        Timer timer = new Timer(ONE_SECOND, new ActionListener(){
+        Timer timer = new Timer(ONE_SECOND, new ActionListener() {
             
             
             
             @Override
-            public void actionPerformed(ActionEvent event) {
+            public void actionPerformed(ActionEvent event)  {
                 SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        
+                    public void run(){
+                        // uncomment for a light show!
+                        // int randInt = random.nextInt(10); 
+                        // updateBackgroud(randInt, startTextBox);
+
+
                         cal = Calendar.getInstance();
                         startTextBox.setText(cal.getTime().toString());
 
@@ -127,26 +134,34 @@ public class Tracker extends JFrame implements ActionListener
                         progressBarTitle.setText("Counting down to - " + trackedEvent.getInterval());
 
 
-                        output.println(trackedEvent.getInterval() + "," + progressBar.getValue());
-                        output.flush();
-
                         startTextBox.revalidate();
                         startTextBox.repaint();
                     }
                 });
             }
         });
+
         eventButton.addActionListener((Event) -> enterEvent(intervalField,eventButton,trackedEvent,progressBar,timer));
         ActionListener[] task = timer.getActionListeners();
         timer.start();
         timer.setRepeats(true);
         timer.addActionListener((task[0]));
 
+        timer.addActionListener((Event) -> {
+            try {
+                outputUpdate(output, progressBar, trackedEvent, file);
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        });
+
         setTitle("Tracker");
         setSize(640, 480);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+       
        
         output.close();
         
@@ -176,10 +191,38 @@ public class Tracker extends JFrame implements ActionListener
         }
     }
 
+    public static void outputUpdate(PrintWriter output, JProgressBar progressBar, Event event, File file) throws FileNotFoundException{
+        output = new PrintWriter(file);
+        output.println(event.getInterval() + "," + progressBar.getValue());
+        output.close();
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
         // 
            
         
+    }
+
+    public void updateBackgroud(int i, JTextField field){
+        if (i == 0){
+            field.setBackground(Color.BLACK);
+        } else if (i == 1){
+            field.setBackground(Color.BLUE);
+        } else if (i == 2){
+            field.setBackground(Color.red);
+        } else if (i == 3){
+            field.setBackground(Color.green);
+        } else if (i == 5){
+            field.setBackground(Color.yellow);
+        } else if (i == 6){
+            field.setBackground(Color.white);
+        } else if (i == 7){
+            field.setBackground(Color.pink);
+        } else if (i == 8){
+            field.setBackground(Color.gray);
+        } else if (i == 9){
+            field.setBackground(Color.magenta);
+        }
     }
 }
