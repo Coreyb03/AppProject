@@ -65,6 +65,7 @@ public class Tracker extends JFrame implements ActionListener
         }
         scan.close();
         
+        // if erroring check data file!!!
         
 
         
@@ -175,4 +176,10 @@ public class Tracker extends JFrame implements ActionListener
         }
     }
 
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        // 
+           
+        
+    }
 }
